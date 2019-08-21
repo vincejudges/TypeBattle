@@ -22,7 +22,6 @@ def init():
 				word.append(ord(ch))
 			chars.append(ch)
 
-
 def loop():
 	bg_color = (230, 230, 230)
 	while True:
@@ -44,7 +43,7 @@ def action():
 			if nowpos == len(word):
 				print("Goooooooooood!")
 				continue
-			if event.key == word[nowpos]:
+			if event.unicode == chr(word[nowpos]):
 				score += 1
 				nowpos += 1
 	printScore()
@@ -62,7 +61,7 @@ def printWords():
 	T = 60
 	pos = 0
 	for ii in range(0, nowpos):
-		if chars[pos] == '\n':
+		while chars[pos] == '\n':
 			L = L + 20
 			T = 60
 			pos += 1
@@ -73,7 +72,7 @@ def printWords():
 		screen.blit(strShow, (T, L))
 		T = T + 12
 	while pos < len(chars):
-		if chars[pos] == '\n':
+		while chars[pos] == '\n':
 			L = L + 20
 			T = 60
 			pos += 1
