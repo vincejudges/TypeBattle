@@ -3,8 +3,9 @@ import sys
 import random
 
 screen = pygame.display.set_mode((800, 600), 0, 0)
-back = pygame.image.load("bk.jpg")
+# back = pygame.image.load("bk.jpg")
 word = []
+chars = []
 nowpos = 0
 score = 0
 lines = []
@@ -19,11 +20,14 @@ def init():
 		for ch in str:
 			if ch != '\n':
 				word.append(ord(ch))
+			chars.append(ch)
 
 
 def loop():
+	bg_color = (230, 230, 230)
 	while True:
-		screen.blit(back, (0, 0))
+		# screen.blit(back, (0, 0))
+		screen.fill(bg_color)
 		action()
 		pygame.time.delay(1)
 		pygame.display.update()
@@ -47,19 +51,38 @@ def action():
 
 def printScore():
 	pygame.font.init()
-	font = pygame.font.Font("tahomabd.ttf", 16)
+	font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
 	scoreShow = font.render("score:%s" % score, True, (255, 0, 0))
 	screen.blit(scoreShow, (20, 20))
 
 def printWords():
-	global lines
+	global chars
+	global nowpos
 	L = 60
-	for str in lines:
+	T = 60
+	pos = 0
+	for ii in range(0, nowpos):
+		if chars[pos] == '\n':
+			L = L + 20
+			T = 60
+			pos += 1
 		pygame.font.init()
-		font = pygame.font.Font("tahomabd.ttf", 16)
-		strShow = font.render("%s" % str.strip(), True, (255, 0, 0))
-		screen.blit(strShow, (60, L))
-		L = L + 20
+		font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
+		strShow = font.render("%s" % chars[pos], True, (0, 0, 255))
+		pos += 1
+		screen.blit(strShow, (T, L))
+		T = T + 12
+	while pos < len(chars):
+		if chars[pos] == '\n':
+			L = L + 20
+			T = 60
+			pos += 1
+		pygame.font.init()
+		font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
+		strShow = font.render("%s" % chars[pos], True, (0, 0, 0))
+		pos += 1
+		screen.blit(strShow, (T, L))
+		T = T + 12
 
 if __name__ == '__main__':
 	init()
