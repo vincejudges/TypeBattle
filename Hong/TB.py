@@ -46,7 +46,11 @@ def action():
 			if event.unicode == chr(word[nowpos]):
 				score += 1
 				nowpos += 1
+				send_to_server()
 	printScore()
+
+def send_to_server():
+	print("Gao!")
 
 def printScore():
 	pygame.font.init()
