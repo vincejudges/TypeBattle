@@ -49,8 +49,9 @@ def action():
 				send_to_server()
 	printScore()
 
+# TO DO
 def send_to_server():
-	print("Gao!")
+	print("VC Kuai Gao!")
 
 def printScore():
 	pygame.font.init()
@@ -71,7 +72,10 @@ def printWords():
 			pos += 1
 		pygame.font.init()
 		font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
-		strShow = font.render("%s" % chars[pos], True, (0, 0, 255))
+		if chars[pos] == ' ':
+			strShow = font.render("_", True, (0, 0, 255))
+		else:
+			strShow = font.render("%s" % chars[pos], True, (0, 0, 255))
 		pos += 1
 		screen.blit(strShow, (T, L))
 		T = T + 12
