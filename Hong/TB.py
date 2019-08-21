@@ -32,7 +32,7 @@ def action():
 		if event.type == pygame.QUIT:
 			sys.exit()
 		if event.type == pygame.KEYDOWN:
-			if nowpos == len(word) - 1:
+			if nowpos == len(word):
 				print("Goooooooooood!")
 				continue
 			if event.key == word[nowpos]:
