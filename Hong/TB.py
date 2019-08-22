@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 
 screen = pygame.display.set_mode((800, 600), 0, 0)
 # back = pygame.image.load("bk.jpg")
@@ -9,6 +10,8 @@ chars = []
 nowpos = 0
 score = 0
 lines = []
+start_time = 0
+speed = 0
 
 def init():
 	global lines
@@ -35,11 +38,14 @@ def action():
 	global score
 	global nowpos
 	global word
+	global start_time
 	printWords()
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
 		if event.type == pygame.KEYDOWN:
+			if nowpos == 0:
+				start_time = time.time()
 			if nowpos == len(word):
 				print("Goooooooooood!")
 				continue
@@ -54,10 +60,17 @@ def send_to_server():
 	print("VC Kuai Gao!")
 
 def printScore():
+	global speed
 	pygame.font.init()
 	font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
-	scoreShow = font.render("score:%s" % score, True, (255, 0, 0))
+	deg = score * 100.0 / len(word)
+	now_time = time.time()
+	if nowpos != len(word):
+		speed = score / (now_time - start_time)
+	scoreShow = font.render("Degree of completion: %.2f %%" % deg, True, (255, 0, 0))
+	speedShow = font.render("Speed: %.2f" % speed, True, (255, 0, 0))
 	screen.blit(scoreShow, (20, 20))
+	screen.blit(speedShow, (20, 40))
 
 def printWords():
 	global chars
