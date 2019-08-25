@@ -2,6 +2,11 @@ import pygame
 import sys
 import random
 import time
+from threading import Thread
+from Game_status import *
+import socket
+from network import Network
+
 
 screen = pygame.display.set_mode((800, 600), 0, 0)
 # back = pygame.image.load("bk.jpg")
@@ -11,7 +16,12 @@ nowpos = 0
 score = 0
 lines = []
 start_time = 0
+game_began = Game_status.NOT_START
 speed = 0
+font_type = "LiberationMono-Regular.ttf"
+threads = []
+network = Network()
+
 
 def init():
 	global lines
@@ -26,7 +36,7 @@ def init():
 			chars.append(ch)
 
 def loop():
-	bg_color = (230, 230, 230)
+	bg_color = (230, 155, 155)
 	while True:
 		# screen.blit(back, (0, 0))
 		screen.fill(bg_color)
@@ -39,34 +49,61 @@ def action():
 	global nowpos
 	global word
 	global start_time
+	global game_began
+	global network
 	printWords()
+	if game_began == Game_status.NOT_START:
+		status = network.try_recv()
+		if (status is not None and status == "BEGIN"):
+			game_began = Game_status.READY
+		else:
+			printGameStatus("Please wait for other player...")
+		return
+	if game_began == Game_status.END:
+		printGameStatus("Game over")
+		time.sleep(5)
+		sys.exit()
+	if game_began == Game_status.READY:
+		game_began = Game_status.RUNNING
+		start_time = time.time()
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
 		if event.type == pygame.KEYDOWN:
-			if nowpos == 0:
-				start_time = time.time()
+			# if nowpos == 0:
+			# 	start_time = time.time()
 			if nowpos == len(word):
 				print("Goooooooooood!")
 				continue
 			if event.unicode == chr(word[nowpos]):
 				score += 1
 				nowpos += 1
-				send_to_server()
+				if (send_to_server(network) == "END"):
+					game_began = Game_status.END
+			if nowpos == len(word):
+				send_to_server(network, finished=True)
+				game_began = Game_status.END
 	printScore()
 
 # TO DO
-def send_to_server():
-	print("VC Kuai Gao!")
+def send_to_server(network, finished=False):
+	if (finished) :
+		network.report("FIN")
+	else:
+		return network.report("{},{}".format(nowpos, speed))
+
+def printGameStatus(status_str):
+	font = pygame.font.Font(font_type, 24)
+	screen.blit(font.render(status_str, True, (255, 0, 0)), (40, 40))
 
 def printScore():
 	global speed
-	pygame.font.init()
-	font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
+	# pygame.font.init()
+	font = pygame.font.Font(font_type, 16)
 	deg = score * 100.0 / len(word)
 	now_time = time.time()
 	if nowpos != len(word):
-		speed = score / (now_time - start_time)
+		speed = score / max((now_time - start_time), 1)
 	scoreShow = font.render("Degree of completion: %.2f %%" % deg, True, (255, 0, 0))
 	speedShow = font.render("Speed: %.2f" % speed, True, (255, 0, 0))
 	screen.blit(scoreShow, (20, 20))
@@ -81,10 +118,10 @@ def printWords():
 	for ii in range(0, nowpos):
 		while chars[pos] == '\n':
 			L = L + 20
-			T = 60
+			T = 60 
 			pos += 1
 		pygame.font.init()
-		font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
+		font = pygame.font.Font(font_type, 16)
 		if chars[pos] == ' ':
 			strShow = font.render("_", True, (0, 0, 255))
 		else:
@@ -98,7 +135,7 @@ def printWords():
 			T = 60
 			pos += 1
 		pygame.font.init()
-		font = pygame.font.Font("LiberationMono-Regular.ttf", 16)
+		font = pygame.font.Font(font_type, 16)
 		strShow = font.render("%s" % chars[pos], True, (0, 0, 0))
 		pos += 1
 		screen.blit(strShow, (T, L))
@@ -107,3 +144,5 @@ def printWords():
 if __name__ == '__main__':
 	init()
 	loop()
+
+	
