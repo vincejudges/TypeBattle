@@ -2,6 +2,11 @@ import pygame
 import sys
 import random
 import time
+from threading import Thread
+from Game_status import *
+import socket
+from network import Network
+
 
 screen = pygame.display.set_mode((800, 600), 0, 0)
 # back = pygame.image.load("bk.jpg")
@@ -11,7 +16,12 @@ nowpos = 0
 score = 0
 lines = []
 start_time = 0
+game_began = Game_status.NOT_START
 speed = 0
+font_type = "LiberationMono-Regular.ttf"
+threads = []
+network = Network()
+
 
 
 def init():
