@@ -4,7 +4,9 @@ import sys
 import time
 from Game_status import *
 
-client_names = set()
+Apos = 0
+Bpos = 0
+client_names = []
 display_online = False
 game_status = Game_status.RUNNING
 
@@ -27,6 +29,10 @@ def check_all_online():
     # return (len(client_names) == 2 and display_online)
     return len(client_names) == 2
 
+
+# If someone win, he should send a FIN.
+# The reponse message should be END if the game already has a winner,
+# or RUN if still running.
 def player_thread(name, conn):
     global game_status
     current_pos = 0
@@ -34,15 +40,24 @@ def player_thread(name, conn):
         data = conn.recv(2048).decode("utf-8")
         if (data == "FIN"):
             game_status = Game_status.SOMEONE_WIN
-        else:
+        elif (name != "display"):
             data = data.split(',')
             nowpos = int(data[0])
             speed = float(data[1])
+            # TODO Here Should send to TBDisplayServer for display.
+            if (name == client_names[0]):
+                Apos = nowpos
+            elif (name == client_names[1]):
+                Bpos = nowpos
             print("{}:  {}".format(name, (nowpos, speed)))
-        if game_status == Game_status.SOMEONE_WIN:
-            conn.send(str.encode("END"))
+            if game_status == Game_status.SOMEONE_WIN:
+                conn.send(str.encode("END"))
+            else:
+                conn.send(str.encode("RUN"))
         else:
-            conn.send(str.encode("RUN"))
+            conn.send(str.encode("{}, {}".format(Apos, Bpos)))
+        
+
 
 def client_thread(conn):
     try:
@@ -51,7 +66,7 @@ def client_thread(conn):
         if (client_name == "display"):
             display_online = True
         else :
-            client_names.add(client_name)
+            client_names.append(client_name)
         while not check_all_online():
             time.sleep(0.1)
         time.sleep(1)

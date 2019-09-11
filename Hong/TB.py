@@ -20,6 +20,7 @@ game_began = Game_status.NOT_START
 speed = 0
 font_type = "LiberationMono-Regular.ttf"
 threads = []
+ready_time = -1
 network = Network()
 
 
@@ -50,10 +51,11 @@ def action():
 	global word
 	global start_time
 	global game_began
+	global ready_time
 	global network
 	printWords()
 	if game_began == Game_status.NOT_START:
-		status = network.try_recv()
+		status = network.try_recv(0.5)
 		if (status is not None and status == "BEGIN"):
 			game_began = Game_status.READY
 		else:
@@ -61,11 +63,18 @@ def action():
 		return
 	if game_began == Game_status.END:
 		printGameStatus("Game over")
-		time.sleep(5)
+		pygame.time.delay(5000)
 		sys.exit()
 	if game_began == Game_status.READY:
-		game_began = Game_status.RUNNING
-		start_time = time.time()
+		if ready_time == -1:	
+			ready_time = time.time()
+		else :
+			delta = 5 - (time.time() - ready_time)
+			printGameStatus("GET READY! START IN {:.2f} second". format(delta))
+			if (delta <= 0):
+				game_began = Game_status.RUNNING
+				start_time = time.time()
+		return 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
@@ -94,7 +103,7 @@ def send_to_server(network, finished=False):
 
 def printGameStatus(status_str):
 	font = pygame.font.Font(font_type, 24)
-	screen.blit(font.render(status_str, True, (255, 0, 0)), (40, 40))
+	screen.blit(font.render(status_str, True, (255, 0, 0)), (80, 40))
 
 def printScore():
 	global speed
@@ -112,6 +121,7 @@ def printScore():
 def printWords():
 	global chars
 	global nowpos
+	global font_type
 	L = 60
 	T = 60
 	pos = 0

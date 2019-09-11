@@ -3,6 +3,7 @@ import sys
 
 
 class Network:
+	# init 
 	def __init__(self):
 		self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # host and port of the server
@@ -10,6 +11,9 @@ class Network:
 		self.port = 5295
 		self.connect()
 	
+	# Read player name from argv[1].
+	# Cient connects to the server, otherwise exit.
+	# SEND NAME
 	def connect(self):
 		if (len(sys.argv) < 2) :
 			print("Please input player name as argv, e.g. python TB.py player1")
@@ -21,6 +25,8 @@ class Network:
 			sys.exit()
 		self.client.send(str.encode(sys.argv[1]))
 	
+	# SEND DATA
+	# RECV DATA and return
 	def report(self, data):
 		try:
 			self.client.send(str.encode(data))
@@ -29,8 +35,10 @@ class Network:
 		except Exception as e:
 			print(e)
 
-	def try_recv(self):
-		self.client.settimeout(0.5)
+	# Try to RECV in 500 ms
+	# SEND a "RECV" if success
+	def try_recv(self, time_out):
+		self.client.settimeout(time_out)
 		result = None
 		try:
 			result = self.client.recv(2048).decode("utf-8")
