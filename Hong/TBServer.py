@@ -12,7 +12,7 @@ game_status = Game_status.RUNNING
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-server = "localhost"
+server = "10.21.33.194"
 server_ip = socket.gethostbyname(server)
 port = 5295
 
@@ -26,8 +26,9 @@ print("Server has been established, waiting for connections.")
 
 def check_all_online():
     global client_names, display_online
-    # return (len(client_names) == 2 and display_online)
-    return len(client_names) == 2
+    print(len(client_names), display_online)
+    return (len(client_names) >= 2 and display_online)
+    # return len(client_names) == 2
 
 
 # If someone win, he should send a FIN.
@@ -35,6 +36,8 @@ def check_all_online():
 # or RUN if still running.
 def player_thread(name, conn):
     global game_status
+    global Apos
+    global Bpos
     current_pos = 0
     while True:
         data = conn.recv(2048).decode("utf-8")
@@ -44,7 +47,6 @@ def player_thread(name, conn):
             data = data.split(',')
             nowpos = int(data[0])
             speed = float(data[1])
-            # TODO Here Should send to TBDisplayServer for display.
             if (name == client_names[0]):
                 Apos = nowpos
             elif (name == client_names[1]):
@@ -55,11 +57,14 @@ def player_thread(name, conn):
             else:
                 conn.send(str.encode("RUN"))
         else:
-            conn.send(str.encode("{}, {}".format(Apos, Bpos)))
+            s = "{}, {}".format(Apos, Bpos)
+            print(s)
+            conn.send(str.encode(s))
         
 
 
 def client_thread(conn):
+    global display_online
     try:
         client_name = conn.recv(2048).decode("utf-8")
         print("Client named \"{}\" comes in.".format(client_name))
